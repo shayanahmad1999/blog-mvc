@@ -7,8 +7,11 @@ use MessageHelper;
 
 class CommentController extends Controller
 {
-    public function add($postId, $userId, $comment)
+    public function add($postId)
     {
+        $userId = $_SESSION['user_id'] ?? null;
+        $comment = $_POST['comment'] ?? '';
+
         $commentModel = new Comment();
 
         // Handle guest comments
@@ -19,10 +22,16 @@ class CommentController extends Controller
             try {
                 $userId = $userModel->create($_POST['guest_name'], $guestEmail, 'guestpass', 'guest');
             } catch (\PDOException $e) {
-                $_SESSION['error'] = "Failed to create guest account. Please try again.";
+                MessageHelper::setError("Failed to create guest account. Please try again.");
                 header("Location: /post/" . $postId);
                 return;
             }
+        }
+
+        if (!$userId) {
+            MessageHelper::setError("You must be logged in to comment.");
+            header("Location: /login");
+            return;
         }
 
         try {
@@ -41,8 +50,10 @@ class CommentController extends Controller
         $this->view("edit_comment", ["comment" => $comment]);
     }
 
-    public function update($id, $comment)
+    public function update($id)
     {
+        $comment = $_POST['comment'] ?? '';
+
         $commentModel = new Comment();
         try {
             $commentModel->update($id, $comment);
@@ -50,8 +61,8 @@ class CommentController extends Controller
         } catch (\PDOException $e) {
             MessageHelper::setError("Failed to update comment. Please try again.");
         }
-        $comment = $commentModel->getById($id);
-        header("Location: /post/" . $comment['post_id']);
+        $commentData = $commentModel->getById($id);
+        header("Location: /post/" . $commentData['post_id']);
     }
 
     public function delete($id)

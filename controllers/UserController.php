@@ -7,8 +7,12 @@ use MessageHelper;
 
 class UserController extends Controller
 {
-    public function register($name, $email, $password)
+    public function register()
     {
+        $name = $_POST['name'] ?? '';
+        $email = $_POST['email'] ?? '';
+        $password = $_POST['password'] ?? '';
+
         $user = new User();
         try {
             $user->create($name, $email, $password);
@@ -20,8 +24,11 @@ class UserController extends Controller
         }
     }
 
-    public function login($email, $password)
+    public function login()
     {
+        $email = $_POST['email'] ?? '';
+        $password = $_POST['password'] ?? '';
+
         $userModel = new User();
         $user = $userModel->findByEmail($email);
 
@@ -37,10 +44,20 @@ class UserController extends Controller
         }
     }
 
+    public function showLogin()
+    {
+        $this->view("login");
+    }
+
+    public function showRegister()
+    {
+        $this->view("register");
+    }
+
     public function logout()
     {
-        session_start();
         session_destroy();
+        MessageHelper::setSuccess("You have been logged out successfully.");
         header("Location: /login");
     }
 }

@@ -15,8 +15,18 @@ class PostController extends Controller
         $this->view("posts", ["posts" => $posts]);
     }
 
-    public function create($userId, $title, $content)
+    public function create()
     {
+        $userId = $_SESSION['user_id'] ?? null;
+        $title = $_POST['title'] ?? '';
+        $content = $_POST['content'] ?? '';
+
+        if (!$userId) {
+            MessageHelper::setError("You must be logged in to create a post.");
+            header("Location: /login");
+            return;
+        }
+
         $postModel = new Post();
         try {
             $postModel->create($userId, $title, $content);
@@ -43,8 +53,11 @@ class PostController extends Controller
         $this->view("edit_post", ["post" => $post]);
     }
 
-    public function update($id, $title, $content)
+    public function update($id)
     {
+        $title = $_POST['title'] ?? '';
+        $content = $_POST['content'] ?? '';
+
         $postModel = new Post();
         try {
             $postModel->update($id, $title, $content);
